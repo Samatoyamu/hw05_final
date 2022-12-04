@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Об авторе проекта{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <h1>Привет, меня зовут Роман</h1>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+      <p>Пытаюсь стать супер программистом, пока не особо получается, но я стараюсь. Честно .</p>
+      <p>Тут ещё что-то написшу, когда придумаю что-то очень классное.</p>
+      <p>P.S ещё я незнаю как нормально сделать фотку справа :(.</p>
+    </div>
+    <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+      <img src="{% static 'img/itsme.jpg' %}" width="350" height="600">
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <h2>Мои работы</h2>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3">
+      <p><a href="{% url 'posts:index' %}">Этот сайт</a></p>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <h2>Контакты для связи</h2>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <p>Телефон: +7 (000) 000-00-00</p>
+      <p>Почта: <a href="mailto: stvoid333@gmail.com">stvoid333@gmail.com</a></p>
+      <p>Телеграм: @RealStaticVoID</p>
+      <p>ВК: <a href="https://vk.com/idstaticvoid">vk.com/idstaticvoid</a></p
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %} лента подписок {% endblock %}
+{% block content %}
+<h1>Последние обновления подписок</h1>
+  {% include 'posts/includes/switcher.html' %}
+  {% for post in page_obj %}
+    {% include 'includes/posts.html' with showgrouplink=True showauthorlink=True %}
+    {% if not forloop.last %}<hr>{% endif %}
+{% endfor %}
+{% include 'posts/includes/paginator.html' %}
+{% endblock %}
