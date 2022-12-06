@@ -9,7 +9,7 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from ..forms import PostForm
-from ..models import Group, Post
+from ..models import Group, Post, Follow
 
 User = get_user_model()
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
@@ -49,6 +49,11 @@ class ViewsTest(TestCase):
             text='Тестовый пост',
             image=cls.pic
         )
+        cls.follow = Follow.objects.create(
+            author=cls.post.author,
+            user=User.objects.create_user(username='Fan')
+        )
+        cls.seconduser = User.objects.create_user(username='NotFan2')
 
     @classmethod
     def tearDownClass(cls):
@@ -57,7 +62,7 @@ class ViewsTest(TestCase):
 
     def setUp(self):
         self.authorized_client = Client()
-        self.authorized_client.force_login(self.post.author)
+        self.authorized_client.force_login(self.follow.user)
 
     def test_pages_show_correct_context_main_details_profile_pages(self):
         """Шаблоны сформированы с правильным контекстом,
@@ -67,9 +72,11 @@ class ViewsTest(TestCase):
             reverse('posts:post_detail', kwargs={'post_id': self.post.id}),
             reverse('posts:profile', kwargs={'username': self.post.author}),
             reverse('posts:group_list', kwargs={'slug': self.group.slug}),
+            reverse('posts:follow_index'),
         ]
         for address in url_names:
             with self.subTest(address=address):
+                cache.clear()
                 response = self.authorized_client.get(address)
                 self.assertEqual(response.context['post'].text, self.post.text)
                 self.assertEqual(response.context['post'].author,
@@ -87,6 +94,7 @@ class ViewsTest(TestCase):
     def test_pages_show_correct_context_edit_page(self):
         """Шаблон сформирован с правильным контекстом,
         на странице редактирования поста"""
+        self.authorized_client.force_login(self.post.author)
         response = self.authorized_client.get(
             reverse('posts:post_edit', kwargs={'post_id': self.post.id}))
         self.assertIsInstance(response.context.get('form'), PostForm)
@@ -112,3 +120,33 @@ class ViewsTest(TestCase):
             reverse('posts:group_list',
                     kwargs={'slug': self.secondgroup.slug}))
         self.assertNotIn(self.post, response.context['page_obj'])
+
+    def test_follow(self):
+        """Можно подписыватся"""
+        Follow.objects.all().delete()
+        follow_count = Follow.objects.count()
+        self.authorized_client.get(reverse('posts:profile_follow',
+                                   kwargs={'username': self.post.author}))
+        self.assertEqual(Follow.objects.count(), follow_count + 1)
+
+    def test_unfollow(self):
+        """можно отписываться"""
+        self.authorized_client.get(reverse('posts:profile_unfollow',
+                                   kwargs={'username': self.post.author}))
+        self.assertFalse(Follow.objects.count())
+
+    def test_feed(self):
+        """нету записей того,на кого не подписан"""
+        self.authorized_client.force_login(self.seconduser)
+        response = self.authorized_client.get(reverse('posts:follow_index'))
+        self.assertNotIn(self.post, response.context['page_obj'])
+
+    def test_cache(self):
+        """тест кэширования"""
+        first_response = self.authorized_client.get(reverse('posts:index'))
+        Post.objects.all().delete()
+        second_response = self.authorized_client.get(reverse('posts:index'))
+        self.assertEqual(first_response.content, second_response.content)
+        cache.clear()
+        third_response = self.authorized_client.get(reverse('posts:index'))
+        self.assertNotEqual(second_response.content, third_response.content)

@@ -46,7 +46,7 @@ class CreateFormTests(TestCase):
             'image': cls.pic
         }
         cls.comment = {
-            'text': 'Комментарий'
+            'text': 'Комментарий',
         }
 
     @classmethod
@@ -73,7 +73,8 @@ class CreateFormTests(TestCase):
         self.assertEqual(object.text, self.form_data['text'])
         self.assertEqual(object.author, response.context['user'])
         self.assertEqual(object.group.id, self.form_data['group'])
-        self.assertTrue(object.image)
+        self.assertEqual(object.image.name,
+                         f"posts/{self.form_data['image'].name}")
         self.assertRedirects(response, reverse(
                              'posts:profile',
                              kwargs={'username': object.author}))
@@ -96,23 +97,29 @@ class CreateFormTests(TestCase):
 
     def test_can_comment(self):
         """успешно отправляются комментарий"""
+        Comment.objects.all().delete()
         response = self.authorized_client.post(
             reverse('posts:add_comment', kwargs={'post_id': self.post.id}),
             data=self.comment,
             follow=True,
         )
-        object = Comment.objects.all().last()
+        object = Comment.objects.last()
         self.assertEqual(object.text, self.comment['text'])
+        self.assertEqual(object.author, response.context['user'])
+        self.assertEqual(object.post, self.post)
         self.assertRedirects(response, reverse(
                              'posts:post_detail',
                              kwargs={'post_id': object.id}))
 
     def test_guest_cant_comment(self):
         """неавторизованные не могут комментировать"""
+        comments_count = Comment.objects.count()
         self.guest_client.post(
             reverse('posts:add_comment', kwargs={'post_id': self.post.id}),
             data=self.comment,
             follow=True,
         )
-        object = Comment.objects.all().last()
+        object = Comment.objects.last()
         self.assertEqual(object, None)
+        self.assertEqual(Comment.objects.count(), comments_count)
+        self.assertNotIn(self.comment['text'], Comment.objects.all())

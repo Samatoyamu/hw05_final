@@ -43,6 +43,7 @@ class URLTemplateNameTests(TestCase):
             (reverse('posts:post_create'), HTTPStatus.OK, True),
             (reverse('posts:post_edit', kwargs={'post_id': self.post.id}),
              HTTPStatus.OK, True),
+            (reverse('posts:follow_index'), HTTPStatus.OK, True)
         ]
         for address, status_code, authuser in url_names:
             with self.subTest(address=address):
@@ -71,7 +72,8 @@ class URLTemplateNameTests(TestCase):
             ('posts/create_post.html', reverse(
                 'posts:post_edit', kwargs={'post_id': self.post.id}),
                 f'/posts/{self.post.id}/edit/'),
-            ('core/404.html', 'post/', 'post/')
+            ('posts/follow.html', reverse('posts:follow_index'), '/follow/'),
+            ('core/404.html', 'post/', 'post/'),
         ]
         for template, address, url in url_template_names:
             with self.subTest(address=address):

@@ -3,8 +3,8 @@
 {% block content %}
 {% load cache %}
   <h1>Последние обновления на сайте</h1>
-  {% include 'posts/includes/switcher.html' %}
-  {% cache 20 index_page with page_obj %}
+  {% include 'posts/includes/switcher.html' with index=True %}
+  {% cache 20 index_page page_obj.number %}
   {% for post in page_obj %}
     {% include 'includes/posts.html' with showgrouplink=True showauthorlink=True %}
     {% if not forloop.last %}<hr>{% endif %}

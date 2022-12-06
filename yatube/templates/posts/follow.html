@@ -2,7 +2,7 @@
 {% block title %} лента подписок {% endblock %}
 {% block content %}
 <h1>Последние обновления подписок</h1>
-  {% include 'posts/includes/switcher.html' %}
+  {% include 'posts/includes/switcher.html' with follow=True %}
   {% for post in page_obj %}
     {% include 'includes/posts.html' with showgrouplink=True showauthorlink=True %}
     {% if not forloop.last %}<hr>{% endif %}
