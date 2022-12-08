@@ -122,4 +122,3 @@ class CreateFormTests(TestCase):
         object = Comment.objects.last()
         self.assertEqual(object, None)
         self.assertEqual(Comment.objects.count(), comments_count)
-        self.assertNotIn(self.comment['text'], Comment.objects.all())

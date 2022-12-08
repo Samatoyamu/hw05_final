@@ -53,7 +53,7 @@ class ViewsTest(TestCase):
             author=cls.post.author,
             user=User.objects.create_user(username='Fan')
         )
-        cls.seconduser = User.objects.create_user(username='NotFan2')
+        cls.notfan = User.objects.create_user(username='NotFan')
 
     @classmethod
     def tearDownClass(cls):
@@ -127,17 +127,23 @@ class ViewsTest(TestCase):
         follow_count = Follow.objects.count()
         self.authorized_client.get(reverse('posts:profile_follow',
                                    kwargs={'username': self.post.author}))
+        object = Follow.objects.get(user=self.follow.user,
+                                    author=self.post.author)
         self.assertEqual(Follow.objects.count(), follow_count + 1)
+        self.assertEqual(object.author, self.post.author)
+        self.assertEqual(object.user, self.follow.user)
 
     def test_unfollow(self):
         """можно отписываться"""
         self.authorized_client.get(reverse('posts:profile_unfollow',
                                    kwargs={'username': self.post.author}))
         self.assertFalse(Follow.objects.count())
+        self.assertFalse(Follow.objects.filter(user=self.follow.user,
+                                               author=self.post.author))
 
     def test_feed(self):
         """нету записей того,на кого не подписан"""
-        self.authorized_client.force_login(self.seconduser)
+        self.authorized_client.force_login(self.notfan)
         response = self.authorized_client.get(reverse('posts:follow_index'))
         self.assertNotIn(self.post, response.context['page_obj'])
 

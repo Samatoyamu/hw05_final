@@ -43,9 +43,8 @@ def profile(request, username):
                    .select_related(
                        'group'
                    ))
-    following = False
-    if request.user.is_authenticated:
-        following = author.following.filter(user=request.user).exists()
+    following = (request.user.is_authenticated
+                 and author.following.filter(user=request.user).exists())
     page_obj = paginator(posts, request.GET.get('page'))
     context = {
         'author': author,
@@ -63,7 +62,7 @@ def post_detail(request, post_id):
     context = {
         'post': post,
         'form': CommentForm(),
-        'comments': post.comments.select_related('post', 'author'),
+        'comments': post.comments.select_related('author'),
     }
     return render(request, 'posts/post_detail.html', context)
 
