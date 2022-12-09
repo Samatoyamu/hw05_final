@@ -138,8 +138,10 @@ class ViewsTest(TestCase):
         self.authorized_client.get(reverse('posts:profile_unfollow',
                                    kwargs={'username': self.post.author}))
         self.assertFalse(Follow.objects.count())
-        self.assertFalse(Follow.objects.filter(user=self.follow.user,
-                                               author=self.post.author))
+        self.assertFalse(Follow.objects
+                               .filter(
+                                   user=self.follow.user,
+                                   author=self.post.author).exists())
 
     def test_feed(self):
         """нету записей того,на кого не подписан"""
